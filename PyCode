@@ -1,0 +1,150 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sb 
+import io
+from sklearn.linear_model import LinearRegression
+
+
+
+df = pd.read_csv('AppDetails.csv')
+
+#cleaning
+df["ApplicationName"] = df["ApplicationName"].fillna('Others')
+avg = df['NumberOfTimesAppsOpened'].mean()
+df['NumberOfNotifications'] = df['NumberOfNotifications'].fillna(df['NumberOfNotifications'].mean())
+df['NumberOfTimesAppsOpened'] = df['NumberOfTimesAppsOpened'].fillna(avg)
+df['NumberOfTimesAppsOpened'] = df['NumberOfTimesAppsOpened'].astype(int)
+df['NumberOfNotifications'] = df['NumberOfNotifications'].astype(int)
+df['UsageOfApplicationsInNumbers'] = df['UsageOfApplicationsInNumbers'].fillna(df['UsageOfApplicationsInNumbers'].mean())
+df['UsageOfApplicationsInNumbers'] = df['UsageOfApplicationsInNumbers'].astype(int)
+print(df)
+
+
+#ManSwasth Algorithm
+
+def ManSwasth(df):
+    global key
+    global value
+    global dat
+    fcount = 0
+    tcount = 0
+    icount = 0
+    ocount = 0
+    gcount = 0
+    ycount = 0
+    fnote = 0
+    tnote = 0
+    inote = 0
+    onote = 0
+    gnote = 0
+    ynote = 0
+    for index, row in df.iterrows():
+      if row["ApplicationName"] == "Facebook":
+        fnote += row['NumberOfNotifications']
+        fcount += row["NumberOfTimesAppsOpened"]
+      elif row["ApplicationName"] == "Twitter":
+        tnote += row['NumberOfNotifications']
+        tcount += row["NumberOfTimesAppsOpened"]
+      elif row["ApplicationName"] == "Instagram":
+        inote += row['NumberOfNotifications']
+        icount += row["NumberOfTimesAppsOpened"]
+      elif row["ApplicationName"] == "Others":
+        onote += row['NumberOfNotifications']
+        ocount += row["NumberOfTimesAppsOpened"]
+      elif row["ApplicationName"] == "Google":
+        gnote += row['NumberOfNotifications']
+        gcount += row["NumberOfTimesAppsOpened"]
+      elif row["ApplicationName"] == "Youtube":
+        ynote += row['NumberOfNotifications']
+        ycount += row["NumberOfTimesAppsOpened"]
+     
+    l = [fcount, tcount, icount, ocount, gcount, ycount]
+    r = [fnote, tnote, inote, onote, gnote, ynote]
+    y = np.array(l)
+    dat = {"FACEBOOK":fcount, "TWITTER":tcount, "INSTAGRAM":icount, "OTHERS":ocount, "GOOGLE":gcount, "YOUTUBE":ycount}
+    key = list(dat.keys())
+    value = list(dat.values())
+    print("The average usage of number of times apps used in a day is:", int(df["NumberOfTimesAppsOpened"].mean()))
+
+    #representation
+    plt.plot(df['NumberOfTimesAppsOpened'], df['ApplicationName'], color='Green', marker = 'p')
+    plt.grid(True)
+    print("Psychological Behaviour:")
+    plt.title('NumberOfTimesAppsOpened vs ApplicationName')
+    plt.ylabel('ApplicationName')
+    plt.xlabel(' NumberOfTimesAppsOpened')
+    plt.show()
+
+    print(pd.DataFrame(l, index=['Facebook', 'Twitter', 'Instagram', 'Others', 'Google', 'Youtube'], columns = ['NumberOfTimesAppsOpened']))
+    print(pd.DataFrame(r, index=['Facebook', 'Twitter', 'Instagram', 'Others', 'Google', 'Youtube'], columns = ['NumberOfNotifications']))
+    label = ['Facebook', 'Twitter', 'Instagram', 'Others', 'Google', "Youtube"]
+    plt.title("More Number Of Times Opened Application")
+    plt.pie(y, labels = label, startangle = 120)
+    plt.show()
+
+    valt = [63, 73, 85]
+    valt.reverse()
+    data = {'values':valt, 'who':[32, 42, 61]}
+    df = pd.DataFrame(data)
+    plt.plot(df['values'], df['who'], color='red')
+    plt.title("Psychological Behaviour")
+    plt.xlabel('Mean Values')
+    plt.ylabel('Mean WHO observations')
+    plt.show()
+    
+data = pd.read_csv('CleanedData.csv')
+#Training The DataSet Using Simple Linear Regression
+ManSwasth(df)
+train_mean = df["NumberOfTimesAppsOpened"].mean()
+train_notification = df["NumberOfNotifications"].mean()
+train_used = df["UsageOfApplicationsInNumbers"].mean()
+train_psyco = (train_mean + train_notification + train_used) // 3
+trains1 = [train_mean, train_notification]
+trains2 = [train_used, train_psyco]
+
+model = LinearRegression()
+X = data['NumberOfNotifications'].values.reshape(-1, 1) # Input features
+y = data['UsageOfApplicationsInNumbers'].values # Output variable
+
+model.fit(X, y) # Train the model on the input features and output variable
+score = model.score(X, y) # Calculate the R-squared value
+
+
+#Testing The DataSet
+dd = pd.read_csv('CleanedData.csv')
+ManSwasth(dd)
+test_mean = dd["NumberOfTimesAppsOpened"].mean()
+test_notification = dd["NumberOfNotifications"].mean()
+test_used = dd["UsageOfApplicationsInNumbers"].mean()
+test_psyco = (test_mean + test_notification + test_used) // 3
+tests1 = [test_mean, test_notification]
+tests2 = [test_used, test_psyco]
+
+new_X = X # New input features (number of hours studied)
+predicted_y = model.predict(new_X) # Predict the output variable (score achieved)
+print("Predicted Values Based On notifications")
+for i in range(len(predicted_y)):
+    print(predicted_y[i])
+    
+    
+#Conclusion
+
+print("Observations are:\nThe difference observed in the Number of times apps opened is:", train_mean - test_mean)
+print("The difference in the Psycological behaviour of the community:", train_psyco - test_psyco)
+plt.plot(trains1, tests1, label = "train")
+plt.plot(trains2, tests2, label = "test")
+plt.legend()
+plt.show()
+
+print("Ranks of the applications in the Tested dataset:")
+fig = plt.figure(figsize = (10, 8))
+plt.bar(key, value, color = "maroon", width = 0.2)
+plt.xlabel("Applications")
+plt.ylabel("Usage")
+plt.title("Rank")
+plt.show()
+
+value.sort()
+print("The Mostly Used Application is:", list(dat.keys())[list(dat.values()).index(value[len(value) - 1])])
+
